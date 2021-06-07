@@ -1,0 +1,5 @@
+Philippine: PH
+Indonesia=Singapore=Malaysia: SG
+Macau=Hong Kong=Taiwan: TW
+Vietnam: VN
+Thailand: TH
