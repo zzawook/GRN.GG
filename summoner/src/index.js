@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import MenuBar from './components/menubar'
+import Container from './components/container'
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
     <MenuBar />
+    <Container />
   </React.StrictMode>,
   document.getElementById('root')
 );

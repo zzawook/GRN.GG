@@ -10,31 +10,35 @@ export function handleMatchData(matchData) {
 
 
 function runMatchDataExtractor(matchData) {
-    const worker = new Worker('./insertMatchData.js', { workerData: matchData });
+    const worker = new Worker('/home/kjaehyeok21/Backend/components/insertMatchData.js', { workerData: matchData });
     worker.on('message', (message) => {
+        console.log(message)
         return true
     });
     worker.on('error', (error) => {
+        console.log(error)
         return false;
     });
     worker.on('exit', (code) => {
         if (code !== 0) {
-            reject(new Error(`Worker for Match Data stopped with exit code ${code}`))
+            return(new Error(`Worker for Match Data stopped with exit code ${code}`))
         }
     })
 }
 
 function runIDHandler(matchData) {
-    const worker = new Worker('./insertUser.js', { workerData: matchData });
+    const worker = new Worker('/home/kjaehyeok21/Backend/components/insertUser.js', { workerData: matchData });
     worker.on('message', (message) => {
+        console.log(message)
         return true
     });
     worker.on('error', (error) => {
+        console.log(error)
         return false;
     });
     worker.on('exit', (code) => {
         if (code !== 0) {
-            reject(new Error(`Worker for ID stopped with exit code ${code}`))
+            return(new Error(`Worker for ID stopped with exit code ${code}`))
         }
     })
 }

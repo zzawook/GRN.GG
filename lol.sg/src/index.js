@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import MenuBar from './components/menubar';
 import SearchBar from './components/searchBar';
 import TierList from './components/tierList'
 import reportWebVitals from './reportWebVitals';
 import Menubar from './components/menubar';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 ReactDOM.render(
   <React.StrictMode>

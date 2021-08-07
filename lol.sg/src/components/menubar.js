@@ -13,9 +13,10 @@ class NavBar extends Component {
             backgroundColor: "#001f75",
 			height: '50px',
 			color: 'white',
-            zIndex: 500,
+            zIndex: '10003',
             width: window.innerWidth,
-            borderBottom: "1px solid #3f37a1"
+            borderBottom: "1px solid #3f37a1",
+            cursor: 'pointer'
         }
 		const logoStyle = {
 			position: 'relative',
@@ -30,7 +31,7 @@ class NavBar extends Component {
             padding: "0",
             overflow: "hidden",
             position: "fixed",
-            zIndex: "1000",
+            zIndex: "10003",
             width: window.innerWidth - 50,
             top: 0,
             left: 210
@@ -41,22 +42,22 @@ class NavBar extends Component {
             textAlign: "center",
             padding: "0px 16px",
             textDecoration: "none",
-            width: "70px",
+            width: "80px",
             height: "50px",
             position: "relative",
             top: "0px",
-        }   
-		const lilinkChampStyle = {
+        } 
+        const li2linkStyle = {
             display: "block",
             color: '#a3a3a3',
             textAlign: "center",
             padding: "0px 16px",
             textDecoration: "none",
-            width: "140px",
+            width: "120px",
             height: "50px",
             position: "relative",
             top: "0px",
-        }   
+        }
         const liHomeStyle={
             float: "left",
             position: "relative",
@@ -64,13 +65,6 @@ class NavBar extends Component {
             height: "50px",
 			borderBottom: '1px solid #ffffff'
         }
-		const liAnalysisStyle={
-			float: "left",
-            position: "relative",
-            top: "0px",
-            height: "50px",
-			borderBottom: '1px solid #3f37a1'
-		}
 		const liBulletinStyle={
 			float: "left",
             position: "relative",
@@ -109,14 +103,27 @@ class NavBar extends Component {
 			top: '12px',
             fontWeight: '630'
         }
+        const onHomeClick = (e) => {
+            e.preventDefault();
+            window.location.href = 'https://grn.gg'
+        }
+        
+        const onBulletinClick = (e) => {
+            e.preventDefault();
+            window.alert("Bulletin is under development. Please be looking forward to it :)")
+        }
+        const onCommunityClick = (e) => {
+            e.preventDefault();
+            window.alert("Community is under development. Please be looking forward to it :)")
+        }
+
         return (
             <div style={containerStyle} >
-                <div style={logoDivStyle}><span style={logoStyle}>LOL.SG</span></div>
+                <div style={logoDivStyle} onClick={onHomeClick}><span style={logoStyle}>GRN.GG</span></div>
                 <ul style={listStyle} >
-                    <li style={liHomeStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut}><a id='home' href="https://lol.sg" style={lilinkStyle}><span style={spanHomeStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Home</span></a></li>
-                    <li style={liAnalysisStyle}><a href="https://lol.sg/tierList" style={lilinkChampStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut}><span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Champion Analysis</span></a></li>
-                    <li style={liBulletinStyle}><a href="https://lol.sg/bulletin" style={lilinkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Bulletin</span></a></li>
-					<li style={liBulletinStyle}><a href="https://lol.sg/community" style={lilinkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Community</span></a></li>
+                    <li style={liHomeStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut}><a id='home' href="https://grn.gg" style={lilinkStyle}><span style={spanHomeStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Home</span></a></li>
+                    <li style={liBulletinStyle} onClic={onBulletinClick}><a href="#" /*"https://grn.gg/bulletin"*/ style={lilinkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Bulletin</span></a></li>
+					<li style={liBulletinStyle} onClick={onCommunityClick}><a href="#" /*"https://grn.gg/community"*/ style={li2linkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Community</span></a></li>
                 </ul>
             </div>
         );
