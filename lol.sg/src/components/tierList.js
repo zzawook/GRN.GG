@@ -1255,10 +1255,10 @@ class TierList extends Component {
             borderRadius: '10px',
             position: 'absolute',
             top: '5px',
-            right: '685px',
+            left: `${260 + 120 - (window.innerWidth * 0.5)}px`,
             textAlign: 'center',
             paddingBottom: '10px',
-            zIndex: '10002'
+            zIndex: '10004'
         }
         const tooltipStyle = {
             position: 'absolute',
