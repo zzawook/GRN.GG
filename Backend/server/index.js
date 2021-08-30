@@ -53,7 +53,27 @@ app.get('/api/getSummonerRecord/:region/:id', (req, res) => {
             })
         }
         else {
-            res.status(500).send("Failed")
+            fetch(`https://acs-garena.leagueoflegends.com/v1/stats/player_history/${region.toLowerCase()}/${id}?begIndex=0&endIndex=20&`, {
+                method: 'GET'
+            }).then(response => {
+                if (response.status === 200) {
+                    response.json().then(json => {
+                        res.status(200).send(json)
+                        let tempList = json['games']['games']
+                        let finalList = [];
+                        for (let i = 0; i < tempList.length; i++) {
+                            if (tempList[i]['queueId'] == 420 || tempList[i]['queueId'] == 4) {
+                                finalList.push(tempList[i]['gameId'])
+                            }
+                        }
+                        callSchedulerByName(finalList, region)
+                    })
+                }
+                else {
+                    res.status(500).send("Failed")
+                }
+            })
+            
         }
     })
 })
@@ -66,6 +86,9 @@ app.get('/api/getMoreRecord/:region/:id/:startIndex', (req, res) => {
             response.json().then(json => {
                 res.status(200).send(json)
             })
+        }
+        else if (response.status == 404) {
+            res.status(404).send("Not Found")
         }
         else {
             res.status(500).send("Failed")

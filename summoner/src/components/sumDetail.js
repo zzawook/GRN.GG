@@ -21,18 +21,20 @@ class SummonerDetail extends Component {
     render(){
         const containerStyle = {
             position: 'relative',
-            height: '43px'
+            height: '43px',
+            paddingBottom: '2px',
+            borderTop: '1px solid #acacac'
         }
         const Style = {
             position: 'absolute',
             height: '30px',
             borderRadius: '15px',
-            top: '10px',
+            top: '6px',
             left: '10px'
         }
         const NameStyle = {
             position: 'absolute',
-            top: '13px',
+            top: '10px',
             left: '85px',
             fontSize: '14px',
             textDecoration: this.props.self? 'underline' : 'null',
@@ -41,21 +43,25 @@ class SummonerDetail extends Component {
         const KdaStyle = {
             position: 'absolute',
             left: '200px',
-            top: '13px',
+            top: '10px',
             fontSize: '14px',
-            textAlign: 'center'
+            textAlign: 'center',
+            textDecoration: this.props.self? 'underline' : 'null',
+            fontWeight: this.props.self? '600' : 'normal'
         }
         const kpStyle = {
             position: 'absolute',
             left: '360px',
-            top: '13px',
+            top: '10px',
             fontSize: '14px',
-            textAlign: 'center'
+            textAlign: 'center',
+            textDecoration: this.props.self? 'underline' : 'null',
+            fontWeight: this.props.self? '600' : 'normal'
         }
         const DmgStyle = {
             position: 'absolute',
             left: '400px',
-            top: '21px',
+            top: '17px',
             width: '150px',
             height: '12px',
             zIndex: '10001',
@@ -77,25 +83,27 @@ class SummonerDetail extends Component {
         const WardStyle = {
             position: 'absolute',
             left: '580px',
-            top: '13px',
+            top: '10px',
             fontSize: '14px',
+            textDecoration: this.props.self? 'underline' : 'null',
+            fontWeight: this.props.self? '600' : 'normal'
         }
         const Spell1Style = {
             position: 'absolute',
             left: '42px',
-            top: '9px',
+            top: '6px',
             height: '15px'
         }
         const Spell2Style = {
             position: 'absolute',
             left: '42px',
-            top: '26px',
+            top: '23px',
             height: '15px'
         }
         const pRuneStyle = {
             position: 'absolute',
             left: '62px',
-            top: '10px',
+            top: '7px',
             height: '15px',
             backgroundColor: 'black',
             borderRadius: '7px'
@@ -103,7 +111,7 @@ class SummonerDetail extends Component {
         const sRuneStyle = {
             position: 'absolute',
             left: '62px',
-            top: '25px',
+            top: '22px',
             height: '15px',
             backgroundColor: 'white',
             borderRadius: '7px'
@@ -111,31 +119,33 @@ class SummonerDetail extends Component {
         const CsStyle = {
             position: 'absolute',
             left: '700px',
-            top: '14px',
-            fontSize: '14px'
+            top: '10px',
+            fontSize: '14px',
+            textDecoration: this.props.self? 'underline' : 'null',
+            fontWeight: this.props.self? '600' : 'normal'
         }
         const Item1Style = {
             position: 'absolute',
             left: '800px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         }
         const Item2Style = {
             position: 'absolute',
             left: '824px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         }
         const Item3Style = {
             position: 'absolute',
             left: '848px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         }
         const Item4Style = {
             position: 'absolute',
             left: '871px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         }
         const Item5Style = {
@@ -147,24 +157,25 @@ class SummonerDetail extends Component {
         const Item6Style = {
             position: 'absolute',
             left: '919px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         }
         const Item7Style = {
             position: 'absolute',
             left: '942px',
-            top: '11px',
+            top: '10px',
             height: '23px',
         } 
         const dmgLabelStyle = {
             position: 'absolute',
             left: '400px',
-            top: '10px',
+            top: '5px',
             color: 'black',
             zIndex: '10003',
             width: '150px',
             textAlign: 'center',
-            fontSize: '9px'
+            fontSize: '9px',
+            fontWeight: this.props.self? '600' : 'normal'
         }
         const spellNameStyle = {
             color: 'white',

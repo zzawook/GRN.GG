@@ -18,6 +18,7 @@ class Container extends Component {
             lastPlayed: 0,
             moreLoading: false,
             itemData: {},
+            notFound: false
         };
     }
 
@@ -59,230 +60,253 @@ class Container extends Component {
             if (response.status == 200) {
                 response.json().then(json => {
                     version = json[0]
-                })
-            }
-        })
-
-        if (summoner.length > 2) {
-            const region = summoner.splice(summoner.length - 1, 1)
-            summoner.sort()
-            const promiseList = []
-            const summonerIds = []
-            const summonerRecord = {}
-            const champMap = {}
-            fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, {
-                method: 'GET'
-            }).then(response => {
-                if (response.status != 200) {
-                    console.log(response)
-                }
-                else {
-                    response.json().then(json => {
-                        const temp = Object.keys(json['data'])
-                        console.log(temp)
-                        for (let i = 0; i < temp.length; i++) {
-                            champMap[json['data'][temp[i]]['key']] = json['data'][temp[i]]['id']
-                        }
-                    })
-                }
-            })
-            for (let i = 0; i < summoner.length; i++) {
-                let ang = new Promise((resolve, reject) => {
-                    fetch(`https://grn.gg/api/getSummonerID/${region.toString()}/${summoner[i].toString()}`/*'https://acs-garena.leagueoflegends.com/v1/players?name=' + summoners[i].toString() + '&region=' + region.toString()*/, {
-                        method: 'GET'
-                    }).then(response => {
-                        if (response.status == 200) {
-                            response.json().then(json => {
-                                summonerIds.push(json['accountId'])
-                                resolve(true)
-                            })
-                        }
-                        else {
-                            console.log(response)
-                            resolve(false)
-                        }
-                    })
-                })
-                promiseList.push(ang)
-            }
-            Promise.all(promiseList).then((values) => {
-                if (values.includes(false)) {
-                    console.log("There was an error while fetching summoner account ID")
-                    return false
-                }
-                let promiseList2 = []
-                for (let i = 0; i < summonerIds.length; i++) {
-                    let angPromise = new Promise((resolve, reject) => {
-                        fetch(`https://grn.gg/api/getSummonerRecord/${region.toString()}/${summonerIds[i].toString()}`/*"httpss://acs-garena.leagueoflegends.com/v1/stats/player_history/" + region.toString() + "/" + summonerIds[i].toString() + "?begIndex=0&endIndex=20&"*/, {
+                    if (summoner.length > 2) {
+                        const region = summoner.splice(summoner.length - 1, 1)
+                        summoner.sort()
+                        const promiseList = []
+                        const summonerIds = []
+                        const summonerRecord = {}
+                        const champMap = {}
+                        fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, {
                             method: 'GET'
                         }).then(response => {
-                            if (response.status == 200) {
-                                response.json().then(json => {
-                                    let games = json['games']['games']
-                                    games.reverse();
-                                    summonerRecord[summonerIds[i].toString()] = games
-                                    resolve(true)
-                                })
+                            if (response.status != 200) {
+                                console.log(response)
                             }
                             else {
-                                resolve(false)
+                                response.json().then(json => {
+                                    const temp = Object.keys(json['data'])
+                                    console.log(temp)
+                                    for (let i = 0; i < temp.length; i++) {
+                                        champMap[json['data'][temp[i]]['key']] = json['data'][temp[i]]['id']
+                                    }
+                                })
                             }
                         })
-                    })
-                    promiseList2.push(angPromise)
-                }
-                Promise.all(promiseList2).then(values => {
-                    if (values.includes(false)) {
-                        console.log("There has been an error while loading summoner record")
-                        return false;
-                    }
-                    this.setState({
-                        multiples: true,
-                        loading: false,
-                        summonersData : summonerRecord,
-                        champMap: champMap,
-                        version: version
-                    })
-                    return;
-                })
-            })
-        }
-        else {
-            let spellData = {}
-            const spellMap = {}
-            let itemData = {}; 
-            fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/item.json`).then(response => {
-                if (response.status == 200) {
-                    response.json().then(json => {
-                        itemData = json['data']
-                    })
-                }
-            })
-            fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`, {
-                method: 'GET'
-            }).then(response => {
-                if (response.status != 200) {
-                    console.log(response)
-                }
-                else {
-                    response.json().then(json => {
-                        spellData = json;
-                        const spells = Object.keys(spellData['data']);
-                        for (let i = 0; i < spells.length; i++) {
-                            spellMap[spellData['data'][spells[i]]['key']] = [spells[i], spellData['data'][spells[i]]['description']]
-                        }
-                    })
-                }
-            })
-            let champData = {}
-            let champMap = {}
-            fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, {
-                method: 'GET'
-            }).then(response => {
-                if (response.status != 200) {
-                    console.log(response)
-                }
-                else {
-                    response.json().then(json => {
-                        champData = json
-                        const temp = Object.keys(json['data'])
-                        for (let i = 0; i < temp.length; i++) {
-                            champMap[json['data'][temp[i]]['key']] = json['data'][temp[i]]['id']
-                        }
-                    })
-                }
-            })
-            const name = summoner[0]
-            const region = summoner[1]
-            fetch(`https://grn.gg/api/getSummonerID/${region.toString()}/${name.toString()}`/*'https://acs-garena.leagueoflegends.com/v1/players?name=' + name.toString() + '&region=' + region.toString()*/, {
-                method: "GET"
-            }).then(result => {
-                let summonerId = -1;
-                if (result.status == 200) {
-                    result.json().then(json => {
-                        summonerId = json['accountId'];
-                        const gameIds = []
-                        fetch(`https://grn.gg/api/getSummonerRecord/${region.toString()}/${summonerId.toString()}`/*"https://acs-garena.leagueoflegends.com/v1/stats/player_history/" + region.toString() + "/" + summonerId.toString() + "?begIndex=0&endIndex=20&"*/, {
-                            method: 'GET'
-                        }).then(response => {
-                            if (response.status == 200) {
-                                response.json().then(json => {
-                                    const summonerData = new Array(json['games']['gameIndexEnd'] - json['games']['gameIndexBegin']).fill(null)
-                                    if (json['games']['gameCount'] == 0) {
+                        for (let i = 0; i < summoner.length; i++) {
+                            let ang = new Promise((resolve, reject) => {
+                                fetch(`https://grn.gg/api/getSummonerID/${region.toString()}/${summoner[i].toString()}`/*'https://acs-garena.leagueoflegends.com/v1/players?name=' + summoners[i].toString() + '&region=' + region.toString()*/, {
+                                    method: 'GET'
+                                }).then(response => {
+                                    if (response.status == 404) {
                                         this.setState({
-                                            loading: false,
-                                            summonersData: [],
-                                            name: name
+                                            notFound: true,
+                                            loading: false
                                         })
                                         return;
                                     }
-                                    const last = json['games']['games'].length;
-                                    const latestName = json['games']['games'][last - 1]['participantIdentities'][0]['player']['summonerName']
-                                    for (let i = 0; i < json['games']['games'].length; i++) {
-                                        gameIds.push(json['games']['games'][i]['gameId'])
+                                    if (response.status == 200) {
+                                        response.json().then(json => {
+                                            summonerIds.push(json['accountId'])
+                                            resolve(true)
+                                        })
                                     }
-                                    let winCount = 0;
-                                    let remakeCount = 0;
-                                    let gameCount = 0;
-                                    let lastPlayed = -1;
-                                    const finalPromiseList = [];
-                                    for (let i = 0; i < gameIds.length; i++) {
-                                        finalPromiseList.push(new Promise((resolve, reject) => {
-                                            fetch(`https://grn.gg/api/getMatch/${region.toString()}/${gameIds[i].toString()}`/*'httpss://acs-garena.leagueoflegends.com/v1/stats/game/' + region.toString() + '/' + gameIds[i].toString()*/, {
-                                                method: 'GET'
-                                            }).then(response1 => {
-                                                if (response1.status == 200) {
-                                                    response1.json().then(json => {
-                                                        summonerData[i] = json
-                                                        gameCount++;
-                                                        let participantId = -1
-                                                        let win = false;
-                                                        for (let k = 0; k < json['participantIdentities'].length; k++) {
-                                                            if (json['participantIdentities'][k]['player']['accountId'] == summonerId) {
-                                                                participantId = json['participantIdentities'][k]['participantId']
-                                                            }
-                                                        }
-                                                        if (json['gameDuration'] < 300) {
-                                                            remakeCount++;
-                                                        }
-                                                        else if (json['participants'][participantId - 1]['stats']['win']) {
-                                                            winCount++;
-                                                        }
-                                                        resolve(true)
+                                    else {
+                                        summonerIds.push("SummonerSearchFailed - " + summoner[i].toString())
+                                        resolve(false)
+                                    }
+                                })
+                            })
+                            promiseList.push(ang)
+                        }
+                        Promise.all(promiseList).then((values) => {
+                            if (values.includes(false)) {
+                                console.log("There was an error while fetching summoner account ID")
+                            }
+                            let promiseList2 = []
+                            for (let i = 0; i < summonerIds.length; i++) {
+                                let angPromise = new Promise((resolve, reject) => {
+                                    if (! summonerIds[i].toString().includes('SummonerSearchFailed')) {
+                                        fetch(`https://grn.gg/api/getSummonerRecord/${region.toString()}/${summonerIds[i].toString()}`/*"httpss://acs-garena.leagueoflegends.com/v1/stats/player_history/" + region.toString() + "/" + summonerIds[i].toString() + "?begIndex=0&endIndex=20&"*/, {
+                                        method: 'GET'
+                                        }).then(response => {
+                                            if (response.status == 200) {
+                                                response.json().then(json => {
+                                                    let games = json['games']['games']
+                                                    games.reverse();
+                                                    summonerRecord[summonerIds[i].toString()] = games
+                                                    resolve(true)
+                                                })
+                                            }
+                                            else {
+                                                resolve(false)
+                                            }
+                                        })
+                                    }
+                                    else {
+                                        summonerRecord[summonerIds[i].toString()] = [];
+                                        resolve(true)
+                                    }
+                                })
+                                promiseList2.push(angPromise)
+                            }
+                            Promise.all(promiseList2).then(values => {
+                                if (values.includes(false)) {
+                                    console.log("There has been an error while loading summoner record")
+                                    return false;
+                                }
+                                console.log(summonerRecord)
+                                this.setState({
+                                    multiples: true,
+                                    loading: false,
+                                    summonersData : summonerRecord,
+                                    champMap: champMap,
+                                    version: version
+                                })
+                                return;
+                            })
+                        })
+                    }
+                    else {
+                        let spellData = {}
+                        const spellMap = {}
+                        let itemData = {}; 
+                        fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/item.json`).then(response => {
+                            if (response.status == 200) {
+                                response.json().then(json => {
+                                    itemData = json['data']
+                                })
+                            }
+                        })
+                        fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`, {
+                            method: 'GET'
+                        }).then(response => {
+                            if (response.status != 200) {
+                                console.log(response)
+                            }
+                            else {
+                                response.json().then(json => {
+                                    spellData = json;
+                                    const spells = Object.keys(spellData['data']);
+                                    for (let i = 0; i < spells.length; i++) {
+                                        spellMap[spellData['data'][spells[i]]['key']] = [spells[i], spellData['data'][spells[i]]['description']]
+                                    }
+                                })
+                            }
+                        })
+                        let champData = {}
+                        let champMap = {}
+                        fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, {
+                            method: 'GET'
+                        }).then(response => {
+                            if (response.status != 200) {
+                                console.log(response)
+                            }
+                            else {
+                                response.json().then(json => {
+                                    champData = json
+                                    const temp = Object.keys(json['data'])
+                                    for (let i = 0; i < temp.length; i++) {
+                                        champMap[json['data'][temp[i]]['key']] = json['data'][temp[i]]['id']
+                                    }
+                                })
+                            }
+                        })
+                        const name = summoner[0]
+                        const region = summoner[1]
+                        fetch(`https://grn.gg/api/getSummonerID/${region.toString()}/${name.toString()}`/*'https://acs-garena.leagueoflegends.com/v1/players?name=' + name.toString() + '&region=' + region.toString()*/, {
+                            method: "GET"
+                        }).then(result => {
+                            let summonerId = -1;
+                            if (result.status == 500) {
+                                this.setState({
+                                    notFound: true,
+                                    loading: false
+                                })
+                                return;
+                            }
+                            if (result.status == 200) {
+                                result.json().then(json => {
+                                    summonerId = json['accountId'];
+                                    const gameIds = []
+                                    fetch(`https://grn.gg/api/getSummonerRecord/${region.toString()}/${summonerId.toString()}`/*"https://acs-garena.leagueoflegends.com/v1/stats/player_history/" + region.toString() + "/" + summonerId.toString() + "?begIndex=0&endIndex=20&"*/, {
+                                        method: 'GET'
+                                    }).then(response => {
+                                        if (response.status == 200) {
+                                            response.json().then(json => {
+                                                const summonerData = new Array(json['games']['gameIndexEnd'] - json['games']['gameIndexBegin']).fill(null)
+                                                if (json['games']['gameCount'] == 0) {
+                                                    this.setState({
+                                                        loading: false,
+                                                        summonersData: [],
+                                                        name: name
                                                     })
+                                                    return;
                                                 }
-                                                else {
-                                                    resolve(false)
+                                                const last = json['games']['games'].length;
+                                                const latestName = json['games']['games'][last - 1]['participantIdentities'][0]['player']['summonerName']
+                                                for (let i = 0; i < json['games']['games'].length; i++) {
+                                                    gameIds.push(json['games']['games'][i]['gameId'])
                                                 }
+                                                let winCount = 0;
+                                                let remakeCount = 0;
+                                                let gameCount = 0;
+                                                let lastPlayed = -1;
+                                                const finalPromiseList = [];
+                                                for (let i = 0; i < gameIds.length; i++) {
+                                                    finalPromiseList.push(new Promise((resolve, reject) => {
+                                                        fetch(`https://grn.gg/api/getMatch/${region.toString()}/${gameIds[i].toString()}`/*'httpss://acs-garena.leagueoflegends.com/v1/stats/game/' + region.toString() + '/' + gameIds[i].toString()*/, {
+                                                            method: 'GET'
+                                                        }).then(response1 => {
+                                                            if (response1.status == 200) {
+                                                                response1.json().then(json => {
+                                                                    summonerData[i] = json
+                                                                    gameCount++;
+                                                                    let participantId = -1
+                                                                    let win = false;
+                                                                    for (let k = 0; k < json['participantIdentities'].length; k++) {
+                                                                        if (json['participantIdentities'][k]['player']['accountId'] == summonerId) {
+                                                                            participantId = json['participantIdentities'][k]['participantId']
+                                                                        }
+                                                                    }
+                                                                    if (json['gameDuration'] < 300) {
+                                                                        remakeCount++;
+                                                                    }
+                                                                    else if (json['participants'][participantId - 1]['stats']['win']) {
+                                                                        winCount++;
+                                                                    }
+                                                                    resolve(true)
+                                                                })
+                                                            }
+                                                            else {
+                                                                resolve(false)
+                                                            }
+                                                        })
+                                                    }))
+                                                }
+                                                Promise.all(finalPromiseList).then(values => {
+                                                    if (values.includes(false)) {
+                                                        console.log("Failed")
+                                                        return;
+                                                    }
+                                                    else {
+                                                        summonerData.reverse()
+                                                        lastPlayed = summonerData[0]['gameCreation']
+                                                        this.setState({
+                                                            version: version,
+                                                            name: latestName.replace(/%20/g, " ").toString(),
+                                                            region: region.toString(),
+                                                            lastPlayed: lastPlayed,
+                                                            winCount: winCount,
+                                                            remakeCount: remakeCount,
+                                                            gameCount: gameCount,
+                                                            multiples: false,
+                                                            summonerId: summonerId,
+                                                            summonersData: summonerData,
+                                                            spellData: spellData,
+                                                            spellMap: spellMap,
+                                                            champMap: champMap,
+                                                            champData: champData,
+                                                            loading: false,
+                                                            itemData: itemData
+                                                        })
+                                                    }
+                                                })
                                             })
-                                        }))
-                                    }
-                                    Promise.all(finalPromiseList).then(values => {
-                                        if (values.includes(false)) {
-                                            console.log("Failed")
-                                            return;
                                         }
                                         else {
-                                            summonerData.reverse()
-                                            lastPlayed = summonerData[0]['gameCreation']
-                                            this.setState({
-                                                version: version,
-                                                name: latestName.replace(/%20/g, " ").toString(),
-                                                region: region.toString(),
-                                                lastPlayed: lastPlayed,
-                                                winCount: winCount,
-                                                remakeCount: remakeCount,
-                                                gameCount: gameCount,
-                                                multiples: false,
-                                                summonerId: summonerId,
-                                                summonersData: summonerData,
-                                                spellData: spellData,
-                                                spellMap: spellMap,
-                                                champMap: champMap,
-                                                champData: champData,
-                                                loading: false,
-                                                itemData: itemData
-                                            })
+                                            console.log("An error occurred during fetching game data")
+                                            return false;
                                         }
                                     })
                                 })
@@ -292,15 +316,10 @@ class Container extends Component {
                                 return false;
                             }
                         })
-                    })
-                }
-                else {
-                    console.log("An error occurred during fetching game data")
-                    return false;
-                }
-            })
-        }
-        
+                    }
+                })
+            }
+        })
     }
 
     componentDidUpdate() {
@@ -442,9 +461,9 @@ class Container extends Component {
                     <Multiple version={this.state.version} data={this.state.summonersData} champMap={this.state.champMap}/> : 
                     (this.state.summonersData.length == 0 ? 
                         <span style={noGameStyle}>There is no recent games played!</span> : 
-                        this.state.summonersData.map(record => <Record itemData={this.state.itemData} version={this.state.version} region={this.state.region} record={record} spellMap={this.state.spellMap} self={this.state.summonerId} champMap={this.state.champMap} spellData={this.state.spellData}/>))
+                        this.state.notFound ? <span style={noGameStyle}>Could not find the player. Please check summoner ID.</span> : this.state.summonersData.map(record => <Record itemData={this.state.itemData} version={this.state.version} region={this.state.region} record={record} spellMap={this.state.spellMap} self={this.state.summonerId} champMap={this.state.champMap} spellData={this.state.spellData}/>))
                 }
-                {!this.state.multiples && this.state.summonersData.length != 0 ? 
+                {!this.state.multiples && this.state.summonersData.length != 0 && !this.state.notFound? 
                     <div style={getMoreStyle} onClick={onGetMoreClicked} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                     {this.state.moreLoading ? 
                         <div>

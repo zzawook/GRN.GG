@@ -15,16 +15,50 @@ class Multiple extends Component {
             ids: ["","","","",""],
             winrate: [[0,0],[0,0],[0,0],[0,0],[0,0]],
             champStats: [[],[],[],[],[]],
-            version: '11.13.1'
+            version: '11.13.1',
+            sum1Found: false,
+            sum2Found: false,
+            sum3Found: false,
+            sum4Found: false,
+            sum5Found: false,
+            keysPressed: []
         }
     }
 
     componentDidMount() {
-        console.log(this.props.data)
+        const addressArray = window.location.href.split("?");
+        const region = addressArray[addressArray.length - 1]
         const summonerIds = Object.keys(this.props.data);
+        console.log(summonerIds)
+        if (! summonerIds[0].includes('SummonerSearchFailed')) {
+            this.setState({
+                sum1Found : true
+            })
+        }
+        if (summonerIds.length >= 2 && ! summonerIds[1].includes('SummonerSearchFailed')) {
+            console.log("Entered")
+            this.setState({
+                sum2Found : true
+            })
+        }
+        if (summonerIds.length >= 3 && ! summonerIds[2].includes('SummonerSearchFailed')) {
+            this.setState({
+                sum3Found : true
+            })
+        }
+        if (summonerIds.length >= 4 && ! summonerIds[3].includes('SummonerSearchFailed')) {
+            this.setState({
+                sum4Found : true
+            })
+        }
+        if (summonerIds.length >= 5 && ! summonerIds[4].includes('SummonerSearchFailed')) {
+            this.setState({
+                sum5Found : true
+            })
+        }
+        console.log(this.state.sum1Found, this.state.sum2Found, this.state.sum3Found, this.state.sum4Found, this.state.sum5Found)
         const winRates = [];
         const champData = [];
-        console.log(this.props.data[summonerIds[0]][0]['participantIdentities'])
         for (let i = 0; i < summonerIds.length; i++) {
             winRates.push(this.getwinrate(this.props.data[summonerIds[i]]))
             champData.push(this.getChampData(this.props.data[summonerIds[i]]))
@@ -46,7 +80,6 @@ class Multiple extends Component {
                 
                 //for each match with the champion
                 for (let k = 0; k < champData[i][champId[j]].length; k++) {
-                    console.log(champData[i][champId[j]][k])
                     if (champData[i][champId[j]][k]['gameDuration'] < 300) {
                         continue;
                     }
@@ -70,7 +103,6 @@ class Multiple extends Component {
             }
         }
         for (let i = 0; i < champStats.length; i++) {
-            console.log(champStats[i])
             champStats[i].sort(function (a, b) {
                 if (a.count > b.count) {
                     return -1
@@ -85,10 +117,21 @@ class Multiple extends Component {
             ids: summonerIds,
             winrate: winRates,
             champStats: champStats,
-            version: this.props.version
+            version: this.props.version,
+            region: region
         })
     }
 
+    processInput() {
+        const input = this.state.inputValue;
+        let spliced = input.split(",")
+        let ang = ""
+        for (let i = 0; i < spliced.length; i++) {
+            spliced[i] = spliced[i].trim();
+        }
+        spliced.map(name => ang += ("?" + name))        
+        return ang;
+    }
 
     componentDidUpdate() {
 
@@ -131,7 +174,8 @@ class Multiple extends Component {
             height: this.state.expanded1? expandedH : this.state.expanded2? expandedH : this.state.expanded3? expandedH : this.state.expanded4? expandedH : this.state.expanded5? expandedH : contractedH,
             marginBottom: '500px',
             left: `${(window.innerWidth -1200) / 2}px`,
-            backgroundColor: '#c9c9c9'
+            backgroundColor: '#c9c9c9',
+            borderRadius: '5px'
         }
         const inputStyle = {
             position: 'absolute',
@@ -212,9 +256,37 @@ class Multiple extends Component {
         const handleInputChange = (e) => {
             e.preventDefault()
             const target = e.target;
-            this.setState({
-                inputValue: target.value
-            })
+            const input = target.value;
+            const nameList = []
+            if (input.includes('\n') || input.includes('joined the lobby')) {
+                const temp = input.split('\n');
+                for (let i = 0; i < temp.length; i++) {
+                    let name = ""
+                    if (temp[i].includes('joined the lobby')) {
+                        name = temp[i].split(' joined the lobby')[0].trim();
+                    }
+                    else {
+                        name = temp[i].split('  ')[0].trim();   
+                    }
+                    if (!nameList.includes(name)) {
+                        nameList.push(name);
+                    }
+                }
+                let finalString = ""
+                for (let i = 0; i < nameList.length - 1; i++) {
+                    nameList[i] !== "" ? finalString += nameList[i].toString() + ',' : finalString = finalString
+                }
+                finalString += nameList[nameList.length - 1].toString();
+                this.setState({
+                    inputValue: finalString
+                })
+            }
+            else {
+                this.setState({
+                    inputValue: target.value
+                })
+            }
+            
         }
         const sumInfoStyle = {
             position: 'absolute',
@@ -223,7 +295,8 @@ class Multiple extends Component {
             width: '218px',
             height: '80px',
             backgroundColor: '#d9d9d9',
-            borderRadius: '5px'
+            borderRadius: '5px',
+            textAlign: 'center'
         }
         const getLastPlayed = (lastPlayed) => {
             const timeFromNow = (Date.now() - lastPlayed) / 1000;
@@ -516,73 +589,90 @@ class Multiple extends Component {
         }
         const onFormSubmit = (e) => { 
             e.preventDefault();
-            
+            let input = this.processInput()
+            window.location.href = `https://grn.gg/summoner/${input}?${this.state.region}`
+        }
+        
+        const onKeyPressed = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault()
+                onFormSubmit(e);
+            }
         }
 
         return(
             <div style={containerStyle}>
                 <form onSubmit={onFormSubmit}>
-                    <textarea style={inputStyle} id='names' name='names' value={this.state.inputValue} onBlur={handleInputBlur} onFocus={handleInputFocus} onChange={handleInputChange} />
+                    <textarea style={inputStyle} id='names' onKeyPress={onKeyPressed} name='names' value={this.state.inputValue} onBlur={handleInputBlur} onFocus={handleInputFocus} onChange={handleInputChange} />
                 </form>
+                
                 <div style={sum1Style}>
-                    <div style={sumInfoStyle}>
-                        <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[0]][0]['gameCreation'])}</span>
-                        <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[0]][0]['participantIdentities'][0]['player']['summonerName']}</span>
-                        <span style={winrateStyle}>{(this.state.winrate[0][1] * 100 / this.state.winrate[0][0]).toFixed(0)}%</span>
-                        <div style={winrateBarStyle}><div style={win1BarStyle}><span style={internalWinStyle}>{this.state.winrate[0][1]}W</span></div><div style={lose1BarStyle}><span style={internalLoseStyle}>{this.state.winrate[0][0] - this.state.winrate[0][1]}L</span></div></div>
-                    </div>
-                    {Object.keys(this.props.data).length >= 1? this.state.expanded1? this.props.data[Object.keys(this.props.data)[0]].map(match => <MiniMatch version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[0]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
-                    {Object.keys(this.props.data).length >= 1? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick1}>{this.state.expanded1? 'View less' : 'View more'}</span> : <div/> }
-                    {Object.keys(this.props.data).length >= 1? <hr style={hrStyle}/> : <div/>}
-                    {this.state.champStats[0] == undefined? <div></div> : this.state.champStats[0].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
+                    {!this.state.sum1Found ? <div style={sumInfoStyle}>Player Search <br/>-<br/>{Object.keys(this.props.data)[0].split('SummonerSearchFailed - ')[1] !== undefined? Object.keys(this.props.data)[0].split('SummonerSearchFailed - ')[1].replaceAll('%20', " ") : <div/>}</div> : 
+                        <div style={sumInfoStyle}>
+                            <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[0]][0]['gameCreation'])}</span>
+                            <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[0]][0]['participantIdentities'][0]['player']['summonerName']}</span>
+                            <span style={winrateStyle}>{(this.state.winrate[0][1] * 100 / this.state.winrate[0][0]).toFixed(0)}%</span>
+                            <div style={winrateBarStyle}><div style={win1BarStyle}><span style={internalWinStyle}>{this.state.winrate[0][1]}W</span></div><div style={lose1BarStyle}><span style={internalLoseStyle}>{this.state.winrate[0][0] - this.state.winrate[0][1]}L</span></div></div>
+                        </div>
+                    }
+                    {this.state.sum1Found && Object.keys(this.props.data).length >= 1? this.state.expanded1? this.props.data[Object.keys(this.props.data)[0]].map(match => <MiniMatch version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[0]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
+                    {this.state.sum1Found && Object.keys(this.props.data).length >= 1? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick1}>{this.state.expanded1? 'View less' : 'View more'}</span> : <div/> }
+                    {this.state.sum1Found && Object.keys(this.props.data).length >= 1? <hr style={hrStyle}/> : <div/>}
+                    {!this.state.sum1Found || this.state.champStats[0] == undefined? <div></div> : this.state.champStats[0].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
                 </div>
+
                 <div style={sum2Style}>
+                    {!this.state.sum2Found ? <div style={sumInfoStyle}>Player Search Failed<br/>-<br/>{Object.keys(this.props.data)[1].split('SummonerSearchFailed - ')[1] !== undefined? Object.keys(this.props.data)[1].split('SummonerSearchFailed - ')[1].replaceAll('%20', " ") : <div/>}</div> : 
                     <div style={sumInfoStyle}>
                         <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[1]][0]['gameCreation'])}</span>
                         <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[1]][0]['participantIdentities'][0]['player']['summonerName']}</span>
                         <span style={winrateStyle}>{(this.state.winrate[1][1] * 100 / this.state.winrate[1][0]).toFixed(0)}%</span>
                         <div style={winrateBarStyle}><div style={win2BarStyle}><span style={internalWinStyle}>{this.state.winrate[1][1]}W</span></div><div style={lose2BarStyle}><span style={internalLoseStyle}>{this.state.winrate[1][0] - this.state.winrate[1][1]}L</span></div></div>
                     </div>
-                    {Object.keys(this.props.data).length >= 2? this.state.expanded2? this.props.data[Object.keys(this.props.data)[1]].map(match => <MiniMatch version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[1]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
-                    {Object.keys(this.props.data).length >= 2? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick2}>{this.state.expanded2? 'View less' : 'View more'}</span> : <div/> }
-                    {Object.keys(this.props.data).length >= 2? <hr style={hrStyle}/> : <div/> }
-                    {this.state.champStats[1] == undefined? <div></div> : this.state.champStats[1].map(stat => <MiniStat  version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
+                    }
+                    {this.state.sum2Found && Object.keys(this.props.data).length >= 2? this.state.expanded2? this.props.data[Object.keys(this.props.data)[1]].map(match => <MiniMatch version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[1]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
+                    {this.state.sum2Found && Object.keys(this.props.data).length >= 2? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick2}>{this.state.expanded2? 'View less' : 'View more'}</span> : <div/> }
+                    {this.state.sum2Found && Object.keys(this.props.data).length >= 2? <hr style={hrStyle}/> : <div/> }
+                    {!this.state.sum2Found || this.state.champStats[1] == undefined ? <div></div> : this.state.champStats[1].map(stat => <MiniStat  version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
                 </div>
+
                 <div style={sum3Style}>
-                    {Object.keys(this.props.data).length > 2? <div style={sumInfoStyle}>
+                    {Object.keys(this.props.data).length > 2 ? !this.state.sum3Found ? <div style={sumInfoStyle}>Player Search Failed<br/>-<br/>{Object.keys(this.props.data)[2].split('SummonerSearchFailed - ')[1] !== undefined? Object.keys(this.props.data)[2].split('SummonerSearchFailed - ')[1].replaceAll('%20', " ") : <div/>}</div> : <div style={sumInfoStyle}>
                         <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[2]][0]['gameCreation'])}</span>
                         <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[2]][0]['participantIdentities'][0]['player']['summonerName']}</span>
                         <span style={winrateStyle}>{(this.state.winrate[2][1] * 100 / this.state.winrate[2][0]).toFixed(0)}%</span>
                         <div style={winrateBarStyle}><div style={win3BarStyle}><span style={internalWinStyle}>{this.state.winrate[2][1]}W</span></div><div style={lose3BarStyle}><span style={internalLoseStyle}>{this.state.winrate[2][0] - this.state.winrate[2][1]}L</span></div></div>
-                    </div> : <div></div>}
-                    {Object.keys(this.props.data).length >= 3? this.state.expanded3? this.props.data[Object.keys(this.props.data)[2]].map(match => <MiniMatch  version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[2]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
-                    {Object.keys(this.props.data).length >= 3? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick3}>{this.state.expanded3? 'View less' : 'View more'}</span> : <div></div>}
-                    {Object.keys(this.props.data).length >= 3? <hr style={hrStyle}/> : <div/>}
-                    {this.state.champStats[2] == undefined? <div></div> : this.state.champStats[2].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
+                    </div> : <div/>}
+                    {Object.keys(this.props.data).length > 2 ? !this.state.sum3Found ? <div></div> : this.state.expanded3? this.props.data[Object.keys(this.props.data)[2]].map(match => <MiniMatch  version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[2]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
+                    {Object.keys(this.props.data).length > 2 ? !this.state.sum3Found ? <div></div> : <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick3}>{this.state.expanded3? 'View less' : 'View more'}</span> : <div></div>}
+                    {Object.keys(this.props.data).length > 2 ? !this.state.sum3Found ? <div></div> : <hr style={hrStyle}/> : <div/>}
+                    {this.state.champStats[2] == undefined || !this.state.sum3Found ? <div></div> : this.state.champStats[2].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
                 </div>
+                
                 <div style={sum4Style}>
-                    {Object.keys(this.props.data).length > 3? <div style={sumInfoStyle}>
+                    {Object.keys(this.props.data).length > 3 ? !this.state.sum4Found ? <div style={sumInfoStyle}>Player Search Failed<br/>-<br/>{Object.keys(this.props.data)[3].split('SummonerSearchFailed - ')[1] !== undefined? Object.keys(this.props.data)[3].split('SummonerSearchFailed - ')[1].replaceAll('%20', " ") : <div/>}</div> : <div style={sumInfoStyle}>
                         <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[3]][0]['gameCreation'])}</span>
                         <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[3]][0]['participantIdentities'][0]['player']['summonerName']}</span>
                         <span style={winrateStyle}>{(this.state.winrate[3][1] * 100 / this.state.winrate[3][0]).toFixed(0)}%</span>
                         <div style={winrateBarStyle}><div style={win4BarStyle}><span style={internalWinStyle}>{this.state.winrate[3][1]}W</span></div><div style={lose4BarStyle}><span style={internalLoseStyle}>{this.state.winrate[3][0] - this.state.winrate[3][1]}L</span></div></div>
-                    </div> : <div></div>}
-                    {Object.keys(this.props.data).length >= 4? this.state.expanded4? this.props.data[Object.keys(this.props.data)[3]].map(match => <MiniMatch version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[3]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
-                    {Object.keys(this.props.data).length >= 4? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick4}>{this.state.expanded4? 'View less' : 'View more'}</span> : <div/>}
-                    {Object.keys(this.props.data).length >= 4? <hr style={hrStyle}/> : <div/> }
-                    {this.state.champStats[3] == undefined? <div></div> : this.state.champStats[3].map(stat => <MiniStat version={this.state.version}  stat={stat} champMap={this.props.champMap}/>)}
+                    </div> : <div/>}
+                    {Object.keys(this.props.data).length > 3 ? !this.state.sum4Found ? <div></div> : this.state.expanded4? this.props.data[Object.keys(this.props.data)[3]].map(match => <MiniMatch  version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[3]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
+                    {Object.keys(this.props.data).length > 3 ? !this.state.sum4Found ? <div></div> : <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick4}>{this.state.expanded4? 'View less' : 'View more'}</span> : <div></div>}
+                    {Object.keys(this.props.data).length > 3 ? !this.state.sum4Found ? <div></div> : <hr style={hrStyle}/> : <div/>}
+                    {this.state.champStats[3] == undefined || !this.state.sum4Found ? <div></div> : this.state.champStats[3].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
                 </div>
+                
                 <div style={sum5Style}>
-                    {Object.keys(this.props.data).length > 4? <div style={sumInfoStyle}>
+                    {Object.keys(this.props.data).length > 4 ? !this.state.sum5Found ? <div style={sumInfoStyle}>Player Search Failed<br/>-<br/>{Object.keys(this.props.data)[4].split('SummonerSearchFailed - ')[1] !== undefined? Object.keys(this.props.data)[4].split('SummonerSearchFailed - ')[1].replaceAll('%20', " ") : <div/>}</div> : <div style={sumInfoStyle}>
                         <span style={lastPlayedStyle}>Last Played: {getLastPlayed(this.props.data[Object.keys(this.props.data)[4]][0]['gameCreation'])}</span>
                         <span style={sumNameStyle}>{this.props.data[Object.keys(this.props.data)[4]][0]['participantIdentities'][0]['player']['summonerName']}</span>
-                        <span style={winrateStyle}>{(this.state.winrate[4][1] * 100 / this.state.winrate[4][0]).toFixed(0)}%</span>
+                        <span style={winrateStyle}>{(this.state.winrate[3][1] * 100 / this.state.winrate[4][0]).toFixed(0)}%</span>
                         <div style={winrateBarStyle}><div style={win5BarStyle}><span style={internalWinStyle}>{this.state.winrate[4][1]}W</span></div><div style={lose5BarStyle}><span style={internalLoseStyle}>{this.state.winrate[4][0] - this.state.winrate[4][1]}L</span></div></div>
-                    </div> : <div></div>}
-                    {Object.keys(this.props.data).length >= 5? this.state.expanded5? this.props.data[Object.keys(this.props.data)[4]].map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[4]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
-                    {Object.keys(this.props.data).length >= 5? <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick5}>{this.state.expanded5? 'View less' : 'View more'}</span> : <div/> }
-                    {Object.keys(this.props.data).length >= 5? <hr style={hrStyle}/> : <div/> }
-                    {this.state.champStats[4] == undefined? <div></div> : this.state.champStats[4].map(stat => <MiniStat version={this.state.version}  stat={stat} champMap={this.props.champMap}/>)}
+                    </div> : <div/>}
+                    {Object.keys(this.props.data).length > 4 ? !this.state.sum5Found ? <div></div> : this.state.expanded5? this.props.data[Object.keys(this.props.data)[4]].map(match => <MiniMatch  version={this.state.version} data={match} champMap={this.props.champMap}/>) : this.props.data[Object.keys(this.props.data)[4]].slice(0, 10).map(match => <MiniMatch version={this.state.version}  data={match} champMap={this.props.champMap}/>) : <div></div>}
+                    {Object.keys(this.props.data).length > 4 ? !this.state.sum5Found ? <div></div> : <span style={expandStyle} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onClick={mouseClick5}>{this.state.expanded5? 'View less' : 'View more'}</span> : <div></div>}
+                    {Object.keys(this.props.data).length > 4 ? !this.state.sum5Found ? <div></div> : <hr style={hrStyle}/> : <div/>}
+                    {this.state.champStats[4] == undefined || !this.state.sum5Found ? <div></div> : this.state.champStats[4].map(stat => <MiniStat version={this.state.version} stat={stat} champMap={this.props.champMap}/>)}
                 </div>
             </div>
         )

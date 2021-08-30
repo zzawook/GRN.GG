@@ -35,9 +35,19 @@ class SearchBar extends Component {
             currentRegion: selectedRegion
         })*/
     }
-
+/*
+MOOYAHO joined the lobby
+oldskool88 joined the lobby
+JF d4rki113r joined the lobby
+ep3n joined the lobby
+MOOYAHO  mid
+nithinmoole joined the lobby
+MOOYAHO  mid
+oldskool88  to
+*/
+//MOOYAHO joined the lobby oldskool88 joined the lobby JF d4rki113r joined the lobby ep3n joined the lobby MOOYAHO  mid nithinmoole joined the lobby MOOYAHO  mid oldskool88  to
     processInput() {
-        let input = this.state.inputValue;
+        const input = this.state.inputValue;
         let spliced = input.split(",")
         let ang = ""
         for (let i = 0; i < spliced.length; i++) {
@@ -57,12 +67,14 @@ class SearchBar extends Component {
             backgroundColor: 'white',
             boxShadow: '0px 2px 4px black',
             border: 'none',
-            height: `${window.innerWidth * 0.03}px`,
+            height: `46px`,
             fontSize: '14px',
             paddingLeft: '10px',
             paddingRight: '10px',
+            paddingTop: '12px',
             color: this.state.inputValue == 'Name 1, Name 2...'? 'grey':'black',
-            fontWeight: '600'
+            fontWeight: '600',
+            resize: 'none'
         }
 
         const onInputFocus=(e)=>{
@@ -75,9 +87,36 @@ class SearchBar extends Component {
         }
 
         const onInputChange=(e)=>{
-            this.setState({
-                inputValue: e.target.value
-            })
+            let input = e.target.value;
+            const nameList = []
+            if (input.includes('\n') || input.includes('joined the lobby')) {
+                const temp = input.split('\n');
+                for (let i = 0; i < temp.length; i++) {
+                    let name = ""
+                    if (temp[i].includes('joined the lobby')) {
+                        name = temp[i].split(' joined the lobby')[0].trim();
+                    }
+                    else {
+                        name = temp[i].split('  ')[0].trim();   
+                    }
+                    if (!nameList.includes(name)) {
+                        nameList.push(name);
+                    }
+                }
+                let finalString = ""
+                for (let i = 0; i < nameList.length - 1; i++) {
+                    nameList[i] !== "" ? finalString += nameList[i].toString() + ',' : finalString = finalString
+                }
+                finalString += nameList[nameList.length - 1].toString();
+                this.setState({
+                    inputValue: finalString
+                })
+            }
+            else {
+                this.setState({
+                    inputValue: input
+                })
+            }
         }
 
         const onInputBlur=(e)=>{
@@ -86,7 +125,6 @@ class SearchBar extends Component {
                     inputValue: 'Name 1, Name 2...'
                 })
             }
-            
         }
 
         const hrStyle={
@@ -103,7 +141,7 @@ class SearchBar extends Component {
             top: '80px',
             right: `${(window.innerWidth*0.25)}px`,
             width: '60px',
-            height: `${window.innerWidth * 0.03}px`,
+            height: `46px`,
             color: 'white',
             fontWeight: '900',
             fontSize: '15px',
@@ -155,7 +193,7 @@ class SearchBar extends Component {
         }
         const regionStyle = {
             position: 'absolute',
-            top: '95px',
+            top: '90px',
             right: `${(window.innerWidth*0.25)+70}px`,
             zIndex: '10002',
         }
@@ -163,16 +201,16 @@ class SearchBar extends Component {
             fontSize: '12px',
             fontWeight: '500',
         }
-        const handleKeyPress = (e) => {
-            e.preventDefault();
-            if (e.key === "Enter") {
+        const onInputKeyPress = (e) => {
+            //e.preventDefault();
+            if (e.key === 'Enter') {
                 onSubmit(e);
             }
         }
 
         return (
             <form>
-                <input type='text' style={inputStyle} value={this.state.inputValue} onFocus={onInputFocus} onChange={onInputChange} onBlur={onInputBlur}/>
+                <textarea style={inputStyle} value={this.state.inputValue} onFocus={onInputFocus} onChange={onInputChange} onBlur={onInputBlur} onKeyPress={onInputKeyPress}/>
                 <DropDown style={regionStyle} drop='down'>
                     <DropDown.Toggle variant='secondary' id='dropdown-basic'  size='sm' style={tempStyle}>
                         {this.state.currentRegion}

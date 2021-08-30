@@ -223,7 +223,6 @@ class Record extends Component {
     }
 
     static getDerivedStateFromProps(newProps, prevstate) {
-        console.log(newProps.record)
         const record = newProps.record;
         if (record == null) {
             return {loading: false};
@@ -304,7 +303,23 @@ class Record extends Component {
         }
         let champName = ""
         let queueType = queueId(parseInt(record['queueId']))
-        const version = record['gameVersion'].split('.')[0] + '.' + record['gameVersion'].split('.')[1] + '.1'
+        let isCurrentSeason = false;
+        let season = newProps.version.split('.')[0];
+        if (parseInt(record['gameVersion'].split('.')[0]) >= parseInt(newProps.version.split('.')[0])) {
+            season = newProps.version.split('.')[0];
+            isCurrentSeason = true;
+        }
+        else {
+            season = record['gameVersion'].split('.')[0];
+        }
+        let patch = record['gameVersion'].split('.')[1]
+        if (isCurrentSeason) {
+            if (parseInt(record['gameVersion'].split('.')[1]) > parseInt(newProps.version.split('.')[1])) {
+                patch = newProps.version.split('.')[1];
+            }
+        }
+        
+        const version = season + '.' + patch + '.1'
         return {
             team1: team1,
             team2: team2,
@@ -385,7 +400,8 @@ class Record extends Component {
             position: 'relative',
             borderBottom: '1px solid #b0b0b0',
             marginTop: '10px',
-            left: `${(window.innerWidth - 1000) / 2}px`
+            left: `${(window.innerWidth - 1000) / 2}px`,
+            //zIndex: '1000'
         }
         const iconStyle = {
             position: 'absolute',
@@ -796,15 +812,17 @@ class Record extends Component {
             window.location.href = encodeURI('https://grn.gg/summoner/?' + this.state.team2['playerNicks'][3] + '?' + this.props.region)
         }
         const onSummoner10Click = (e) => {
-            window.location.href = encodeURI('https://grn.gg/summoner/?' + this.state.team2['playerNicks'][4] + '/' + this.props.region)
+            window.location.href = encodeURI('https://grn.gg/summoner/?' + this.state.team2['playerNicks'][4] + '?' + this.props.region)
         }
         const spellNameStyle = {
             color: 'white',
-            fontSize: '12px'
+            fontSize: '12px',
+            zIndex: '100000 !important'
         }
         const itemNameStyle = {
             color: 'white',
-            fontSize: '12px'
+            fontSize: '12px',
+            zIndex: '100000 !important'
         }
 
         return(

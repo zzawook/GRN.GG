@@ -57,14 +57,15 @@ class GameDetail extends Component {
             position: 'relative',
             top: '0px',
             backgroundColor: '#bfbfbf',
-            zIndex: '10000'
+            zIndex: '0'
         }
         const team1Style = {
             backgroundColor: this.props.record['teams'][0]['win'] == 'Win'? '#a6caf5' : '#ffbaba',
             position: 'relative',
             height: '250px',
             width: '1000px',
-            borderBottom: '1px solid gray'
+            borderBottom: '1px solid gray',
+            zIndex: '10000'
         }
         const team2Style = {
             backgroundColor: this.props.record['teams'][0]['win'] == 'Win'? '#ffbaba' : '#a6caf5',
