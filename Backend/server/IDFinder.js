@@ -13,18 +13,18 @@ async function findMoreData() {
     let outdatedPlayers = outdatedPlayersCall['content'];
     console.log('Outdated Players length: ' + outdatedPlayers.length.toString())
     let playerLength = 0;
-    if (outdatedPlayers.length > 5000) {
-        playerLength = 5000;
+    if (outdatedPlayers.length > 8000) {
+        playerLength = 8000;
         outdatedPlayers.splice(playerLength, outdatedPlayers.length - playerLength)
         console.log('Reset Players length: ' + outdatedPlayers.length.toString())
     }
     else {
         playerLength = outdatedPlayers.length;
     }
-    let count = 0;
+    let count= 0;
     //for each player, fetch 20 recent match data
     for (let i = 0; i < playerLength; i++) {
-        if (count < 9000) {
+        if (count < 15000) {
             console.log(i.toString() + "th player")
             let historyCall = await getPlayerHistory(outdatedPlayers[i]['id'], outdatedPlayers[i]['region'], 0, 20, true);
             if (!historyCall['success']) {
@@ -57,6 +57,7 @@ async function findMoreData() {
     }
     console.log('RankedList length: ' + rankedList.length.toString())
     handleMatchData(rankedList)
+    findMoreData()
 }
 
 export default class IDFinder {

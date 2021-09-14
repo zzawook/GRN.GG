@@ -523,8 +523,6 @@ class TierList extends Component {
                 totGame = totGame + this.state.countData[countDataKeys[i]]
             }
         }
-        console.log(totGame)
-        console.log(midTierList['53']['banCount'])
         //Could replace with browser side calculation for performance-sake
         fetch('https://grn.gg/api/calculateStats', {
             method: 'POST',
@@ -547,31 +545,31 @@ class TierList extends Component {
             const ADC = Object.keys(json[3])
             const SPT = Object.keys(json[4])
             for (let i = 0; i < TOP.length; i++) {
-                if (json[0][TOP[i]]['pickRate'] < 0.5) {
+                if (json[0][TOP[i]]['pickRate'] < 1) {
                     continue;
                 }
                 finalTOP.push(json[0][TOP[i]])
             }
             for (let i = 0; i < JGL.length; i++) {
-                if (json[1][JGL[i]]['pickRate'] < 0.5) {
+                if (json[1][JGL[i]]['pickRate'] < 1) {
                     continue;
                 }
                 finalJGL.push(json[1][JGL[i]])
             }
             for (let i = 0; i < MID.length; i++) {
-                if (json[2][MID[i]]['pickRate'] < 0.5) {
+                if (json[2][MID[i]]['pickRate'] < 1) {
                     continue;
                 }
                 finalMID.push(json[2][MID[i]])
             }
             for (let i = 0; i < ADC.length; i++) {
-                if (json[3][ADC[i]]['pickRate'] < 0.5) {
+                if (json[3][ADC[i]]['pickRate'] < 1) {
                     continue;
                 }
                 finalADC.push(json[3][ADC[i]])
             }
             for (let i = 0; i < SPT.length; i++) {
-                if (json[4][SPT[i]]['pickRate'] < 0.5) {
+                if (json[4][SPT[i]]['pickRate'] < 1) {
                     continue;
                 }
                 finalSPT.push(json[4][SPT[i]])
@@ -758,8 +756,8 @@ class TierList extends Component {
 
     render() {
         const containerStyle={
-            position:'absolute',
-            top: `${70+80+(window.innerWidth * 0.025)}px`,
+            position:'relative',
+            top: '0px',//`${70+80+(window.innerWidth * 0.025)}px`,
             right: `${window.innerWidth * 0.25}px`,
         }
         
@@ -1202,9 +1200,9 @@ class TierList extends Component {
         }
         
         const dropdownStyle = {
-            position: 'relative',
-            bottom: '10px',
-            //right: '50px'
+            position: 'absolute',
+            top: '-10px',
+            right: '0px',
             zIndex: '10001'
         }
         const guideStyle = {

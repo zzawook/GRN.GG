@@ -58,6 +58,7 @@ function championDataProcess() {
 }
 
 async function calculateChampionStatistics(regionId) {
+    console.log(regionId)
     await setUp()
     await championDataProcess()
 
@@ -82,8 +83,8 @@ async function calculateChampionStatistics(regionId) {
     {
         CHAMPION_PICKRATES[CHAMPIONS_IDLIST[i]] = [0,0,0,0,0]
         CHAMPION_WINRATES[CHAMPIONS_IDLIST[i]] = [0,0,0,0,0]
-        
-        let banSQL = `SELECT COUNT (gameId) as count from matchDB where regionId = "${regionId}" AND (ban1 = ${CHAMPIONS_IDLIST[i]} OR ban2 = ${CHAMPIONS_IDLIST[i]} OR ban3 = ${CHAMPIONS_IDLIST[i]} OR ban4 = ${CHAMPIONS_IDLIST[i]} OR ban5 = ${CHAMPIONS_IDLIST[i]} OR ban6 = ${CHAMPIONS_IDLIST[i]} OR ban7 = ${CHAMPIONS_IDLIST[i]} OR ban8 = ${CHAMPIONS_IDLIST[i]} OR ban9 = ${CHAMPIONS_IDLIST[i]} OR ban10 = ${CHAMPIONS_IDLIST[i]})` //SQL for counting bans for this champion for this patch version
+        console.log(CHAMPIONS_LIST[i])
+        let banSQL = `SELECT COUNT(gameId) as count from matchDB where regionId = "${regionId}" AND (ban1 = ${CHAMPIONS_IDLIST[i]} OR ban2 = ${CHAMPIONS_IDLIST[i]} OR ban3 = ${CHAMPIONS_IDLIST[i]} OR ban4 = ${CHAMPIONS_IDLIST[i]} OR ban5 = ${CHAMPIONS_IDLIST[i]} OR ban6 = ${CHAMPIONS_IDLIST[i]} OR ban7 = ${CHAMPIONS_IDLIST[i]} OR ban8 = ${CHAMPIONS_IDLIST[i]} OR ban9 = ${CHAMPIONS_IDLIST[i]} OR ban10 = ${CHAMPIONS_IDLIST[i]})` //SQL for counting bans for this champion for this patch version
         //count bans for this champion
         con.query(banSQL, (err, result) => {
             if (err) {
@@ -93,12 +94,13 @@ async function calculateChampionStatistics(regionId) {
             }
             let ang = JSON.parse(JSON.stringify(result))
             CHAMPION_BANCOUNTS[CHAMPIONS_IDLIST[i]] = ang[0]['count'];
+            console.log("Ban retrieved: " + i + "th; " + CHAMPIONS_LIST[i] + " " + regionId)
         })
         
         for (let a = 0; a < positions.length; a++) {
     
-            let winSQL = `SELECT COUNT (gameId) as count from matchRecordDB WHERE regionId = "${regionId}" AND matchRecordDB.champId = ${CHAMPIONS_IDLIST[i]} AND matchRecordDB.role = "${positions[a]}" AND matchRecordDB.win = 1`//SQL for counting wins with this champion for this patch version
-            let pickSQL = `SELECT COUNT (gameId) as count from matchRecordDB WHERE regionId = "${regionId}" AND matchRecordDB.role = "${positions[a]}" AND matchRecordDB.champId = ${CHAMPIONS_IDLIST[i]}` //SQL for calculating pick rates for this champion for this patch version
+            let winSQL = `SELECT COUNT(gameId) as count from matchRecordDB WHERE regionId = "${regionId}" AND matchRecordDB.champId = ${CHAMPIONS_IDLIST[i]} AND matchRecordDB.role = "${positions[a]}" AND matchRecordDB.win = 1`//SQL for counting wins with this champion for this patch version
+            let pickSQL = `SELECT COUNT(gameId) as count from matchRecordDB WHERE regionId = "${regionId}" AND matchRecordDB.role = "${positions[a]}" AND matchRecordDB.champId = ${CHAMPIONS_IDLIST[i]}` //SQL for calculating pick rates for this champion for this patch version
     
             //count wins with this champion for this role
             con.query(winSQL, (err, result) => {
@@ -108,6 +110,7 @@ async function calculateChampionStatistics(regionId) {
                     return;
                 }
                 let ang = JSON.parse(JSON.stringify(result))
+                console.log("Win retrieved: " + i + "th; "  + CHAMPIONS_LIST[i] + " " + positions[a] + " " + regionId)
                 let prevProfile = CHAMPION_WINCOUNTS[CHAMPIONS_IDLIST[i]]
                 if (prevProfile == null) {
                     prevProfile = [ang[0]['count']]
@@ -126,6 +129,7 @@ async function calculateChampionStatistics(regionId) {
                     return;
                 }
                 let ang = JSON.parse(JSON.stringify(result))
+                console.log("Pick retrieved: " + i + "th; "  + CHAMPIONS_LIST[i] + " " + positions[a] + " " + regionId)
                 let prevProfile = CHAMPION_PICKCOUNTS[CHAMPIONS_IDLIST[i]]
                 if (prevProfile == null) {
                     prevProfile = [ang[0]['count']]
@@ -139,7 +143,7 @@ async function calculateChampionStatistics(regionId) {
     }
     
     //count number of games surveyed
-    let totSQL = `SELECT COUNT (gameId) as count from matchDB where regionId = "${regionId}"`
+    let totSQL = `SELECT COUNT(gameId) as count from matchDB where regionId = "${regionId}"`
     con.query(totSQL, (err, result) => {
         if (err) {
             console.log(err)
@@ -147,6 +151,7 @@ async function calculateChampionStatistics(regionId) {
             return;
         }
         let ang = JSON.parse(JSON.stringify(result))
+        console.log("Total retrieved: " + " " + regionId)
         matchCount = ang[0]['count']
         console.log('MATCH COUNT: ' + matchCount.toString())
 
@@ -183,7 +188,11 @@ async function calculateChampionStatistics(regionId) {
                         console.log(err)
                         return;
                     }
-                    con.end()
+                    console.log("Updated: " + i + "th; "  + CHAMPIONS_LIST[i] + " " + positions[j] + " " + regionId)
+                    if (i == CHAMPIONS_IDLIST.length - 1 && j == positions.length - 1) {
+                        console.log("Update complete")
+                        con.end()
+                    }
                 })
             }
         }     

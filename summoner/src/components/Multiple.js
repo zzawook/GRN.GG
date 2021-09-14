@@ -305,19 +305,19 @@ class Multiple extends Component {
             const daysFromNow = Math.floor(timeFromNow / (60 * 60 * 24))
             const monthsFromNow = Math.floor(timeFromNow / (60 * 60 * 24 * 30))
             const yearsFromNow = Math.floor(timeFromNow / (60 * 60 * 24 * 365))
-            if (yearsFromNow > 1) {
+            if (yearsFromNow >= 1) {
                 return yearsFromNow.toString() + " years ago"
             }
-            else if (monthsFromNow > 1) {
+            else if (monthsFromNow >= 1) {
                 return monthsFromNow.toString() + " months ago"
             }
-            else if (daysFromNow > 1) {
+            else if (daysFromNow >= 1) {
                 return daysFromNow.toString() + " days ago"
             }
-            else if (hoursFromNow > 1) {
+            else if (hoursFromNow >= 1) {
                 return hoursFromNow.toString() + " hours ago"
             }
-            else if (minutesFromNow > 1) {
+            else if (minutesFromNow >= 1) {
                 return minutesFromNow.toString() + " minutes ago"
             }
             else {

@@ -107,23 +107,16 @@ class NavBar extends Component {
             e.preventDefault();
             window.location.href = 'https://grn.gg'
         }
-        
-        const onBulletinClick = (e) => {
-            e.preventDefault();
-            window.alert("Bulletin is under development. Please be looking forward to it :)")
-        }
         const onCommunityClick = (e) => {
             e.preventDefault();
             window.alert("Community is under development. Please be looking forward to it :)")
         }
-
+//<li style={liBulletinStyle} onClick={onCommunityClick}><a href="#" /*"https://grn.gg/community"*/ style={li2linkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Community</span></a></li>
         return (
             <div style={containerStyle} >
                 <div style={logoDivStyle} onClick={onHomeClick}><span style={logoStyle}>GRN.GG</span></div>
                 <ul style={listStyle} >
                     <li style={liHomeStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut}><a id='home' href="https://grn.gg" style={lilinkStyle}><span style={spanHomeStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Home</span></a></li>
-                    <li style={liBulletinStyle} onClic={onBulletinClick}><a href="#" /*"https://grn.gg/bulletin"*/ style={lilinkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Bulletin</span></a></li>
-					<li style={liBulletinStyle} onClick={onCommunityClick}><a href="#" /*"https://grn.gg/community"*/ style={li2linkStyle} onMouseOver={changeBackgroundOn} onMouseLeave={changeBackgroundOut} > <span style={spanOtherStyle} onMouseOver={emptyEvent} onMouseLeave={emptyEvent}>Community</span></a></li>
                 </ul>
             </div>
         );

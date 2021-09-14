@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import DropDown from 'react-bootstrap/DropDown'
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 /*props: */
 class SearchBar extends Component {
     constructor(props) {
         super(props);
         this.state = {
             inputValue: 'Name 1, Name 2...',
-            currentRegion: 'SG'
+            currentRegion: 'SG',
+            showModal: false,
+            mouseInModal: false
         };
     }
 
@@ -207,6 +211,39 @@ oldskool88  to
                 onSubmit(e);
             }
         }
+        const handleClose = (e) => {
+            this.setState({
+                showModal: false,
+            })
+        }
+        const handleOpen = (e) => {
+            this.setState({
+                showModal: true
+            })
+        }
+        const spanStyle = {
+            position: 'absolute',
+            left: '620px',
+            top: '135px',
+            fontSize: '10px',
+            color: 'white',
+            cursor: 'pointer',
+            textDecoration: this.state.mouseInModal? 'underline' : 'none',
+        }
+        const handleMouseEnter = (e) => {
+            this.setState({
+                mouseInModal: true
+            })
+        }
+        const handleMouseLeave = (e) => {
+            this.setState({
+                mouseInModal: false
+            })
+        }
+        const modalStyle = {
+            zIndex: '10005',
+            top: '100px'
+        }
 
         return (
             <form>
@@ -224,7 +261,26 @@ oldskool88  to
                     </DropDown.Menu>
                 </DropDown>
                 <button style={submitStyle} onClick={onSubmit}>Go</button>
+                <span style={spanStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleOpen}>New to GRN.GG? Click to see what this website can do!</span>
                 <hr style={hrStyle}/>
+
+                <Modal show={this.state.showModal} onHide={handleClose} style={modalStyle}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Welcome to GRN.GG!</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Welcome to GRN.GG, the <strong>ONE AND ONLY</strong> integrated LoL summoner search and champion statistics analysis service exclusively for South East Asia server.
+                        <br/><br/> To search your match record, enter your summoner name and press enter or 'Go' button at the right of search bar.
+                        You can also paste one or multiple "X has joined the lobby" phrases directly copied from your game client to multiple search at one queue.
+                        <br/><br/> In this page, you can see champion's estimated win rate, ban rate, pick rate, (unofficial) and their ranking based on score calculated
+                        with algorithms. Statistics and analysis specific for each champions are under development, so please look forward to future deployments!
+                    </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="primary" onClick={handleClose}>
+                                Got it!
+                            </Button>
+                    </Modal.Footer>
+                </Modal>
             </form>
         )
     }
