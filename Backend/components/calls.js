@@ -1,145 +1,112 @@
+import { stat } from 'fs';
 import { createRequire } from 'module';
+import { version } from 'os';
 const require = createRequire(import.meta.url);
 
 const fetch = require("node-fetch");
-const mysql = require('mysql')
+const mysql = require('mysql');
+const mysql2 = require('mysql2/promise');
 
-export function fetchTierList(regions) {
-    return new Promise((resolve, reject) => {
-        const con = mysql.createConnection({
-            host: '165.22.223.89',
-            user: 'kjaehyeok21',
-            password: 'airbusa380861',
-            database: 'LOLGRN',
-            port: '/var/run/mysqld/mysqld.sock'
-        })
-        con.on('error', (err) => {
-            if (err.code == "PROTOCOL_CONNECTION_LOST") {
-                con.connect()
-            }
-            else {
-                throw(err)
-            }
-        })
-        let topSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "TOP"'
-        let jglSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "JGL"'
-        let midSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "MID"'
-        let adcSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "ADC"'
-        let sptSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "SPT"'
-        const tierList = {}
-        tierList['COUNT'] = {}
-        for (let i = 0; i < regions.length; i++) {
-            let regionSQL = `SELECT count(gameId) as count from matchDB WHERE regionId = "${regions[i].toString()}"`
-            con.query(regionSQL, (err, result) => {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    return;
-                }
-                result = JSON.parse(JSON.stringify(result))
-                tierList['COUNT'][regions[i].toString()] = result[0]['count']
-            })
+export async function fetchTierList(regions) {
+    let con = mysql2.createPool({
+        host: '165.22.223',
+        user: 'kjaehyeok21',
+        password: 'airbusa380861',
+        database: 'LOLGRN',
+        port: '/var/run/mysqld/mysqld.sock'
+    });
+    const connection = await con.getConnection(async conn => conn);
+    con.on('error', (err) => {
+        if (err.code == "PROTOCOL_CONNECTION_LOST") {
+            con.connect()
         }
-        const versionSQL = 'SELECT patchVersion from patchDB'
-        con.query(versionSQL, (err, result) => {
-            if (err) {
-                console.log(err)
-                con.end()
-                return;
-            }
-            result = JSON.parse(JSON.stringify(result))
-            tierList['version'] = result[0]['patchVersion']
-        })
-        const topPromise = new Promise((resolve1, reject1) => {
-            con.query(topSQL, (err, result)=> {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    reject1(false)
-                    return;
-                }
-                else {
-                    let ang = JSON.parse(JSON.stringify(result))
-                    tierList['TOP'] = ang;
-                    resolve1(true)
-                }
-            })
-        })
-        const jglPromise = new Promise((resolve1, reject1) => {
-            con.query(jglSQL, (err, result)=> {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    reject1(false)
-                    return;
-                }
-                else {
-                    let ang = JSON.parse(JSON.stringify(result))
-                    tierList['JGL'] = ang;
-                    resolve1(true)
-                }
-            })
-        })
-        const midPromise = new Promise((resolve1, reject1) => {
-            con.query(midSQL, (err, result)=> {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    reject1(false)
-                    return;
-                }
-                else {
-                    let ang = JSON.parse(JSON.stringify(result))
-                    tierList['MID'] = ang;
-                    resolve1(true)
-                }
-            })
-        })
-        const adcPromise = new Promise((resolve1, reject1) => {
-            con.query(adcSQL, (err, result)=> {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    reject1(false)
-                    return;
-                }
-                else {
-                    let ang = JSON.parse(JSON.stringify(result))
-                    tierList['ADC'] = ang;
-                    resolve1(true)
-                }
-            })
-        })
-        const sptPromise = new Promise((resolve1, reject1) => {
-            con.query(sptSQL, (err, result)=> {
-                if (err) {
-                    console.log(err)
-                    con.end()
-                    reject1(false)
-                    return;
-                }
-                else {
-                    let ang = JSON.parse(JSON.stringify(result))
-                    tierList['SPT'] = ang;
-                    resolve1(true)
-                }
-            })
-        })
-        Promise.all([topPromise, jglPromise, midPromise, adcPromise, sptPromise]).then((result) => {
-            let rejected = false;
-            for (let a = 0; a < result.length; a++) {
-                if (result[a] == false) {
-                    rejected = true;
-                }
-            }
-            if (!rejected) {
-                resolve(tierList);
-            }
-            else {
-                resolve({});
-            }
-        })
+        else {
+            throw(err)
+        }
     })
+    let topSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "TOP"'
+    let jglSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "JGL"'
+    let midSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "MID"'
+    let adcSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "ADC"'
+    let sptSQL = 'SELECT champId, champName, position, region, gScore, winRate, winCount, pickRate, banRate, banCount, pickCount FROM statDB WHERE position = "SPT"'
+    const tierList = {}
+    tierList['COUNT'] = {}
+    for (let i = 0; i < regions.length; i++) {
+        let regionSQL = `SELECT count(gameId) as count from matchDB WHERE regionId = "${regions[i].toString()}"`
+        try {
+            const [rows] = await connection.query(regionSQL)
+            const result = rows[0]['count']
+            tierList['COUNT'][regions[i].toString()] = result
+        }
+        catch(err1) {
+            console.log(err1)
+            con.end()
+            return;
+        }
+    }
+    const versionSQL = 'SELECT patchVersion from patchDB'
+    try {
+        const [rows] = await connection.query(versionSQL)
+        const result = rows[0]['patchVersion']
+        tierList['version'] = result
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
+    //TOP TIERLIST
+    try {
+        const [rows] = await connection.query(topSQL)
+        tierList['TOP'] = rows;
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
+    //JGL TIERLIST
+    try {
+        const [rows] = await connection.query(jglSQL)
+        tierList['JGL'] = rows;
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
+    //MID TIERLIST
+    try {
+        const [rows] = await connection.query(midSQL)
+        tierList['MID'] = rows;
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
+    //ADC TIERLIST
+    try {
+        const [rows] = await connection.query(adcSQL)
+        tierList['ADC'] = rows;
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
+    //SPT TIERLIST
+    try {
+        const [rows] = await connection.query(sptSQL)
+        tierList['SPT'] = rows;
+        connection.release();
+        return tierList
+    }
+    catch(err1) {
+        console.log(err1)
+        con.end()
+        return;
+    }
 }
 
 export function getChampName(req, res) {
@@ -218,7 +185,7 @@ export function getPlayerAccountId(nickname, regionId, now) {
     }
     
 }
-
+//695511
 //Retrieves gameId of last (endIndex - begIndex) games, including the game ID, the player with given ID played.
 export function getPlayerHistory(playerId, regionId, begIndex, endIndex, now) {
     if (now) {
@@ -388,164 +355,105 @@ export function getMatchTimeline(matchId, regionId, now) {
     }
 }
 
-export function getOutdatedPlayers() {
-    return new Promise((resolve, reject) => {
-        const con = mysql.createConnection({
-            host: '165.22.223.89',
-            user: 'kjaehyeok21',
-            password: 'airbusa380861',
-            database: 'LOLGRN',
-            port: '/var/run/mysqld/mysqld.sock'
-        })
-        const date = Math.round(Date.now())
-        const dateYesterday = date - (60 * 60 * 12 * 1000);
-        let sql = 'SELECT id, region FROM userDB WHERE lastUpdated < '+ dateYesterday.toString()
-        con.query(sql, (err, result)=> {
-            if (err) {
-                console.log(err)
-                con.end()
-                resolve({ 'content': [], 'success': false });
-                return;
+export async function getOutdatedPlayers(connection) {
+    const date = Math.round(Date.now())
+    const dateYesterday = date - (60 * 60 * 12 * 1000);
+    let sql = 'SELECT id, region FROM userDB WHERE lastUpdated < '+ dateYesterday.toString()
+    try {
+        const [rows] = await connection.query(sql)
+        return {'content': rows, 'success': true}
+    } catch (err) {
+        console.log(err)
+        return {'content': [], 'success': false};
+    }
+}
+
+export async function checkGameInDB(gameId, connection) {
+    let sql = 'SELECT gameId from matchDB where gameId = '+gameId.toString()
+    try {
+        const [rows] = await connection.query(sql)
+        if (rows.length > 0) {
+            if (rows[0]['gameId'] == gameId.toString()) {
+                return true;
             }
             else {
-                let ang = JSON.parse(JSON.stringify(result))
-                resolve({'content': ang, 'success': true})
+                return false;
             }
-            
-        })
-    })
-}
-
-export function checkGameInDB(gameId) {
-    return new Promise((resolve, reject) => {
-        const con = mysql.createConnection({
-            host: '165.22.223.89',
-            user: 'kjaehyeok21',
-            password: 'airbusa380861',
-            database: 'LOLGRN',
-            port: '/var/run/mysqld/mysqld.sock'
-        })
-        let sql = 'SELECT gameId from matchDB where gameId = '+gameId.toString()
-        con.query(sql, (err, result)=> {
-            if (err) {
-                console.log(err)
-                con.end()
-                reject();
-                return;
-            }
-            else {
-                con.end()
-                if (result.length > 0) {
-                    resolve(true)
-                }
-                else {
-                    resolve(false)
-                }
-            }
-        })
-    })
-}
-
-export function deleteOutdatedGames(patchDateTime) {
-    return new Promise((resolve, reject) => {
-        const con = mysql.createConnection({
-            host: '165.22.223.89',
-            user: 'kjaehyeok21',
-            password: 'airbusa380861',
-            database: 'LOLGRN',
-            port: '/var/run/mysqld/mysqld.sock'
-        })
-        let sql = 'SELECT gameId FROM matchDB WHERE gameCreation < ' + patchDateTime.toString()
-        console.log("update initiated")
-        con.query(sql, (err, result)=> {
-            if (err) {
-                console.log(err)
-                con.end()
-                resolve(err)
-                return;
-            }
-            let gamesForDelete = JSON.parse(JSON.stringify(result));
-            const unit = 1000;
-            let done = true;
-            if (gamesForDelete.length > unit) {
-                done = false;
-                gamesForDelete.splice(unit, gamesForDelete.length - 1);
-            }
-            console.log(gamesForDelete)
-            const promiseList = [];
-            for (let i = 0; i < gamesForDelete.length; i++) {
-                let matchRecordSQL = 'DELETE FROM matchRecordDB where gameId = '+ gamesForDelete[i]['gameId'].toString()
-                promiseList.push(new Promise((resolve1, reject1) => {
-                    console.log(i)
-                    con.query(matchRecordSQL, (err, result) => {
-                        if (err) {
-                            console.log(err)
-                            resolve1(false)
-                            return;
-                        }
-                        else {
-                            console.log(i + 'th record deleted')
-                            let matchSQL = 'DELETE FROM matchDB where gameId = ' + gamesForDelete[i]['gameId'].toString()
-                            con.query(matchSQL, (err, result) => {
-                                if (err) {
-                                    console.log(err)
-                                    resolve1(false)
-                                    return;
-                                }
-                                else {
-                                    console.log(i + "th game deleted")
-                                    resolve1(true)
-                                }
-                            })
-                        }
-                    })
-                }))
-            }
-            Promise.all(promiseList).then(values => {
-                let statSQL = 'UPDATE statDB SET winRate = 0, winCount = 0, banRate = 0, banCount = 0, pickRate = 0, pickCount = 0, gScore = 0'
-                con.query(statSQL, (err, result) => {
-                    if (err) {
-                        console.log(err)
-                        resolve(err)
-                        return;
-                    }
-                    else {
-                        let patchSQL = `UPDATE patchDB SET patchDate = ${patchDateTime}`
-                        con.query(patchSQL, (err, result) => {
-                            if (err) {
-                                console.log(err)
-                                resolve(err)
-                                return;
-                            }
-                            else {
-                                resolve(true);
-                                if (!done) {
-                                    deleteOutdatedGames().then((value) => {})
-                                }
-                            }
-                        })
-                    }
-                })
-            })
-        })
-    })
-}
-
-export function updatedPlayer(id, region) {
-    let newSQL = `UPDATE userDB SET lastUpdated = ${Date.now() / 1000} WHERE id = ${id} AND region = "${region}"`
-    const con = mysql.createConnection({
-        host: '165.22.223.89',
-        user: 'kjaehyeok21',
-        password: 'airbusa380861',
-        database: 'LOLGRN',
-        port: '/var/run/mysqld/mysqld.sock'
-    })
-    con.query(newSQL, (err, result) => {
-        if (err) {
-            console.log(err)
-            con.end()
-            return
         }
-        con.end()
-    })
+        else {
+            return false;
+        }
+    } catch (err) {
+        console.log(err)
+        return;
+    }
+}
+
+export async function deleteOutdatedGames(patchDateTime, connection) {
+    let sql = 'SELECT gameId FROM matchDB WHERE gameCreation < ' + patchDateTime.toString()
+    console.log("update initiated")
+    let gamesForDelete = -1;
+    try {
+        gamesForDelete = await connection.query(sql)
+    }
+    catch(err) {
+        console.log(err)
+        return;
+    }
+    console.log(gamesForDelete)
+    for (let i = 0; i < gamesForDelete.length; i++) {
+        console.log(i)
+        let matchRecordSQL = 'DELETE FROM matchRecordDB where gameId = '+ gamesForDelete[i]['gameId'].toString()
+        try {
+            const [rows] = await connection.query(matchRecordSQL)
+            console.log(i + 'th record deleted')
+        }
+        catch(err) {
+            console.log(err)
+            return;
+        }
+        let matchSQL = 'DELETE FROM matchDB where gameId = ' + gamesForDelete[i]['gameId'].toString()
+        try {
+            const [rows] = await connection.query(matchSQL)
+            console.log(i + 'th game deleted')
+        }
+        catch(err) {
+            console.log(err)
+            return;
+        }
+    }
+    
+    let statSQL = 'UPDATE statDB SET winRate = 0, winCount = 0, banRate = 0, banCount = 0, pickRate = 0, pickCount = 0, gScore = 0'
+
+    try {
+        const [rows] = await connection.query(statSQL)
+        console.log('Stat DB Updated')
+    }
+    catch(err) {
+        console.log(err)
+        return
+    }
+
+    let patchSQL = `UPDATE patchDB SET patchDate = ${patchDateTime}`
+    try {
+        const [rows] = await connection.query(patchSQL)
+        connection.release()
+        console.log('Patch DB Updated')
+        return;
+    }
+    catch(err) {
+        console.log(err)
+        return
+    }
+}
+
+export async function updatedPlayer(id, region, connection) {
+    let newSQL = `UPDATE userDB SET lastUpdated = ${Date.now() / 1000} WHERE id = ${id} AND region = "${region}"`
+    try {
+        const [rows] = await connection.query(newSQL)
+        return;
+    } catch (err) {
+        console.log(err)
+        return;
+    }
 }
